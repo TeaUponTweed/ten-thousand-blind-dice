@@ -3,11 +3,9 @@ import sys
 import cv2
 import numpy as np
 
-if __name__ == '__main__':
-    assert len(sys.argv) > 1, 'need image'
-    img = cv2.imread(sys.argv[1])
-    img = cv2.resize(img,(400,500))
-    print(img.shape)
+def get_white_area(img, debug=False):
+    # img = cv2.resize(img,(400,500))
+    # print(img.shape)
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     (_,a),(_,b),(_,c) = cv2.threshold(img[:, :, 0],127,255,0), cv2.threshold(img[:, :, 1],127,255,0), cv2.threshold(img[:, :, 2],127,255,0)
     gray = a & b & c
@@ -15,12 +13,14 @@ if __name__ == '__main__':
     def gen_contours(): 
         for cnt in contours:
             yield cv2.contourArea(cnt), cnt
-    _, cnt = max(gen_contours(), key=lambda x: x[0])
+    return max(gen_contours(), key=lambda x: x[0])
     (x1, y1), (x2, y2), _ = cv2.fitEllipse(cnt)
-    print (x2-x1)/(y2-y1)
+    # print (x2-x1)/(y2-y1)
+    if debug:
+        cv2.drawContours(img,[cnt],0,(0,255,0),2)
 
-    cv2.drawContours(img,[cnt],0,(0,255,0),2)
+        cv2.imshow('IMG',img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-    cv2.imshow('IMG',img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    return area
